@@ -63,7 +63,7 @@ Poly.prototype.draw = function(x,y) {
     else
         path = this.path;
 
-    var point;
+    var point, px, py;
     for (var i = 0; i < path.length; i++) {
         point = path[i];
         if (point.hasOwnProperty('x')) {
@@ -167,25 +167,46 @@ Poly.prototype.scale = function(xscale, yscale, apply) {
         this.path = foo;
     else
         this._tl_path_ = foo;
-    
+
     return this;
 };
 
-function PolyChain(polys_list) {
+function PolyCombine(context, polys_list) {
 /*
     Poly_list = [ list of { x: <offset x>, y: <offset y>, poly: <poly instance> ]
 */
     this.polys = [];
+    var path = [];
     for (var i = 0; i < polys_list.length; i++) {
         //console.log(i);
         var entry = polys_list[i];
         if (entry.hasOwnProperty('x') && entry.hasOwnProperty('y') && entry.hasOwnProperty('poly')) {
+            var x = entry.x;
+            var y = entry.y;
             var poly = entry.poly;
-            if (poly instanceof Poly)
+            if (poly instanceof Poly) {
                 this.polys.push(entry);
+                var temp_poly = new Poly(poly.cx, poly.path, poly.label).translate(x,y,true);
+                var tmp_path = temp_poly.path;
+                if (i != 0) {
+                    if (tmp_path[0].hasOwnProperty('x')) {
+                        path.push({ mx: tmp_path[0].x ,my: tmp_path[0].y });
+                    }
+                }
+                for (var j =0; j < tmp_path.length; j++)
+                    path.push(tmp_path[j]);
+            }
         }
     }
+    this.poly = new Poly(context, path);
 }
+
+// Shortcuts
+PolyCombine.prototype.draw = function(x,y) { this.poly.draw(x,y);};
+PolyCombine.prototype.translate = function(x,y,apply) { return this.poly.translate(x,y,apply); };
+PolyCombine.prototype.rotate = function(angle,apply) { return this.poly.rotate(angle,apply); };
+PolyCombine.prototype.scale = function(x,y,apply) { return this.poly.scale(x,y,apply); };
+
 function cv_rotate_tmp() {
     var x = 50;
     var y = 50;
@@ -202,7 +223,7 @@ function cv_rotate_tmp() {
     context.fillRect(-0.5*width,-0.5*height, width, height);
     context.restore();
 }
-var W, G, I, rect;
+var W, G, I, WGI, rect;
 
 $(document).ready(function() {
     canvas = document.createElement('canvas');
@@ -255,6 +276,14 @@ $(document).ready(function() {
                         {x: 100, y: 20}
                     ], 'I'
                 );
+
+    WGI = new PolyCombine(context,
+        [
+            { x: 0, y:0, poly: W },
+            { x: 100, y: 0, poly: G},
+            { x: 200, y: 0, poly: I }
+        ]);
+
     rect = new Poly(context,
                     [
                         {x: 0, y: 0},
@@ -262,5 +291,6 @@ $(document).ready(function() {
                         {x: 100, y: 100},
                         {x: 0, y: 100}
                     ]);
+
 
 });
