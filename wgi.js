@@ -171,7 +171,7 @@ Poly.prototype.scale = function(xscale, yscale, apply) {
     return this;
 };
 
-function PolyCombine(context, polys_list) {
+function PolyCombine(context, polys_list, label, stroke, fill, linewidth, linetype) {
 /*
     Poly_list = [ list of { x: <offset x>, y: <offset y>, poly: <poly instance> ]
 */
@@ -198,14 +198,10 @@ function PolyCombine(context, polys_list) {
             }
         }
     }
-    this.poly = new Poly(context, path);
+    Poly.call(this, context, path, label, stroke, fill, linewidth, linetype);
 }
-
-// Shortcuts
-PolyCombine.prototype.draw = function(x,y) { this.poly.draw(x,y);};
-PolyCombine.prototype.translate = function(x,y,apply) { return this.poly.translate(x,y,apply); };
-PolyCombine.prototype.rotate = function(angle,apply) { return this.poly.rotate(angle,apply); };
-PolyCombine.prototype.scale = function(x,y,apply) { return this.poly.scale(x,y,apply); };
+PolyCombine.prototype = Object.create(Poly.prototype);
+PolyCombine.prototype.constructor = PolyCombine;
 
 function cv_rotate_tmp() {
     var x = 50;
