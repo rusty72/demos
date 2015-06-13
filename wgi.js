@@ -113,10 +113,10 @@ Poly.prototype.translate = function(x, y, apply) {
     return this;
 };
 
-Poly.prototype.rotate = function(angle, apply) {
+Poly.prototype.rotate = function(angle, around, apply) {
     var radians = (Math.PI / 180) * angle;
     var xr, yr;
-    var centre = { x: 0.5 * this.width(), y: 0.5 * this.height()};
+    var centre = around || { x: 0.5 * this.width(), y: 0.5 * this.height()};
     var path, foo;
     if (this.hasOwnProperty('_tl_path_'))
         path = this._tl_path_;
