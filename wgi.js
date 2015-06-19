@@ -171,6 +171,85 @@ Poly.prototype.scale = function(xscale, yscale, apply) {
     return this;
 };
 
+Poly.prototype.area = function() {
+    /*
+        Calculate the area occupied by the Polygon
+
+                 1  N-1
+         AREA = ---  E  (x  y    - x   y )
+                 2  i=0   i  i+1    i+1 i
+
+        x  y  = x y
+         N, N    0 0
+     */
+
+    var area = 0;
+    var p_i, p_iplus1;
+    var f = function(point) {
+       return point.hasOwnProperty('x') == true ? { x: point.x, y: point.y} : {x: point.mx,y: point.my };
+    };
+
+    for(var i= 0, j = this.path.length - 1; i < j; i++) {
+        p_i = f(this.path[i]);
+        p_iplus1 = f(this.path[i + 1]);
+        area+=p_i.x * p_iplus1.y;
+        area-=p_iplus1.x * p_i.y;
+    }
+    return area / 2;
+};
+
+Poly.prototype.centroid = function() {
+    /*
+        Calculate the centre (centroid) of the Polygon, note this function
+        only works on non-intersecting polygon's. T
+        his can be used to parameter around to this.rotate() for more exact
+        rotating around oneself. (default the centre of it's bounding box is
+        used in rotate())
+
+                1  N-1
+         Cx = ----  E  (x  + x   )(x y    - x   y )
+               6A  i=0   i    i+1   i i+1    i+1 i
+
+                1  N-1
+         Cy = ----  E  (y  + y   )(x y    - x   y )
+               6A  i=0   i    i+1   i i+1    i+1 i
+
+                    1  N-1
+         AREA(A) = ---  E  (x  y    - x   y )
+                    2  i=0   i  i+1    i+1 i
+
+        x  y  = x y
+         N, N    0 0
+
+        NOTE:
+        We also calculate area here in the same way as in this.area(), the
+        reason we do this is, and not call this.area(), is in this.area() we
+        also iterate over the polygon path; so with DRY i would be iterating
+        twice over the same polygon path
+     */
+    var area = 0;
+    var cx = 0, cy = 0;
+    var p_i, p_iplus1;
+    var common;
+    var f = function(point) {
+       return point.hasOwnProperty('x') == true ? { x: point.x, y: point.y} : {x: point.mx,y: point.my };
+    };
+
+    for(var i= 0, j = this.path.length - 1; i < j; i++) {
+        p_i = f(this.path[i]);
+        p_iplus1 = f(this.path[i + 1]);
+        common = p_i.x * p_iplus1.y - p_iplus1.x * p_i.y;
+        cx += (p_i.x + p_iplus1.x) * common;
+        cy += (p_i.y + p_iplus1.y) * common;
+
+        area+=p_i.x * p_iplus1.y;
+        area-=p_iplus1.x * p_i.y;
+    }
+    area /= 2;
+    var fact = area * 6;
+    return {x: cx / fact, y: cy / fact};
+};
+
 function PolyCombine(context, polys_list, label, stroke, fill, linewidth, linetype) {
 /*
     Poly_list = [ list of { x: <offset x>, y: <offset y>, poly: <poly instance> ]
