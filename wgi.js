@@ -67,12 +67,12 @@ Poly.prototype.draw = function(x,y) {
     for (var i = 0; i < path.length; i++) {
         point = path[i];
         if (point.hasOwnProperty('x')) {
-            px = point.x;
-            py = point.y;
+            px = Math.round(point.x);
+            py = Math.round(point.y);
             this.cx.lineTo(px, py);
         } else {
-            px = point.mx;
-            py = point.my;
+            px = Math.round(point.mx);
+            py = Math.round(point.my);
             this.cx.moveTo(px, py);
         }
     }
